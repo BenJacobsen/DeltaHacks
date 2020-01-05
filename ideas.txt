@@ -1,0 +1,3 @@
+Ideas:
+Deepfake detection as chrome extension
+OAuth framework for ease of user
