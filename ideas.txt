@@ -1,5 +1,4 @@
 Ideas:
-Deepfake detection as chrome extension
 OAuth framework for ease of user
 
 Library for making jackbox-like games on web server.
