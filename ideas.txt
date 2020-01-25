@@ -10,3 +10,4 @@ Library creates server but need config file for port and url.  Stick to text but
 Difficulty comes from making this scalable, only provide functions for web app communication or have html templates like angular
 
 make in node.js or flask, learn how to make a library, how much has to be accounted for? frontend and backend assuming we provide login/ response components.
+
