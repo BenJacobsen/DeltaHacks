@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo Game</title>
+</head>
+<body>
+    <script>function loadClient(){
+  var http = new XMLHttpRequest();
+  http.open("POST", "localhost:5000");
+  http.send();
+  var button = document.getElementById("button");
+  var text = document.getElementById("text");
+  hide();
+  text.textContent = "You have joined! Please wait for other players...";
+  http.onreadystatechange = function() {
+    if(this.readyState == 4 && this.status == 200){
+      text.textContent = this.responseText;
+      document.getElementById("text-box").style.display = "block";
+      button.textContent = "Submit";
+      button.style.display = "block";
+      button.onclick = loadQuestion();
+    }
+  };
+}
+
+function reset(prompt){
+  document.getElementById("text").textContent = prompt;
+  document.getElementById("button").style.visibility = "visible";
+  document.getElementById("text-area").style.visibility = "visible";
+}
+
+function hide(){
+  var button = document.getElementById("button");
+  var text = document.getElementById("text");
+  var textArea = document.getElementById("text-area");
+  textArea.style.display = "none";
+  button.style.display = "none";
+}
+
+function loadQuestion(){
+  var http = new XMLHttpRequest();
+  http.open("POST", "localhost:5000");
+  http.send();
+  var button = document.getElementById("button");
+  var text = document.getElementById("text");
+  var textArea = document.getElementById("text-area");
+  text.textContent = "You have submitted your answer! Please wait for other players to answer...";
+  http.onload = function() {
+    reset(this.responseText);
+  };
+}
+</script>
+    <p id = "text"></p>
+    <textarea style = "display:none" id = "text-area" rows="4" cols="50"></textarea>
+    <button onclick = "loadClient()" id = "button">Join</button>
+</body>
+</html>
