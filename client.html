@@ -5,14 +5,16 @@
     <title>Demo Game</title>
 </head>
 <body>
-    <script>function loadClient(){
+    <script>
+    function loadClient(){
   var http = new XMLHttpRequest();
-  http.open("POST", "localhost:5000");
-  http.send();
+  var textArea = document.getElementById("text-area");
   var button = document.getElementById("button");
   var text = document.getElementById("text");
+  http.open("POST","localhost:5000/api/login");
+  http.send(textArea.textContent + " has joined");
   hide();
-  text.textContent = "You have joined! Please wait for other players...";
+  text.textContent = "You are joining...";
   http.onreadystatechange = function() {
     if(this.readyState == 4 && this.status == 200){
       text.textContent = this.responseText;
@@ -20,6 +22,8 @@
       button.textContent = "Submit";
       button.style.display = "block";
       button.onclick = loadQuestion();
+    } else if (this.status == 400){
+      text.textContent = "This lobby is currently full."
     }
   };
 }
@@ -28,6 +32,7 @@ function reset(prompt){
   document.getElementById("text").textContent = prompt;
   document.getElementById("button").style.visibility = "visible";
   document.getElementById("text-area").style.visibility = "visible";
+  document.getElementById("text-area").textContent = "";
 }
 
 function hide(){
@@ -40,11 +45,11 @@ function hide(){
 
 function loadQuestion(){
   var http = new XMLHttpRequest();
-  http.open("POST", "localhost:5000");
-  http.send();
   var button = document.getElementById("button");
   var text = document.getElementById("text");
   var textArea = document.getElementById("text-area");
+  http.open("POST", "localhost:5000");
+  http.send(textArea.textContent);
   text.textContent = "You have submitted your answer! Please wait for other players to answer...";
   http.onload = function() {
     reset(this.responseText);
@@ -52,7 +57,7 @@ function loadQuestion(){
 }
 </script>
     <p id = "text"></p>
-    <textarea style = "display:none" id = "text-area" rows="4" cols="50"></textarea>
-    <button onclick = "loadClient()" id = "button">Join</button>
+    <textarea id = "text-area" rows="1" cols="50" placeholder="Enter Your Username"></textarea>
+    <button style = "display:block" onclick = "loadClient()" id = "button">Join</button>
 </body>
 </html>
