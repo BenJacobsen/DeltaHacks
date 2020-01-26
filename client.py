@@ -11,17 +11,22 @@ class client_ui(tk.Frame):
         self.pack()
         self.create_widgets()
 
-    def submitUsername(self):
-        self.username = self.entry_text.get()
+
+    def submit(self):
+        if  self.username == "":
+            self.username = self.entry_text.get()
         self.submit_done = True
 
-    def setStateLoading(self):
-        self.text["text"] = "Loading..."
+
+    def setStateLoading(self, stateText):
+        self.text["text"] = stateText
         self.hide_interaction()
 
     def setStatePrompt(self, prompt):
+        self.entry_text.set("")
         self.text["text"] = prompt
         self.show_interaction()
+        self.submit_done = False
 
 
     def create_widgets(self):
@@ -30,22 +35,23 @@ class client_ui(tk.Frame):
         self.entry_text = tk.StringVar(self)
         self.entry = tk.Entry(self, bd = 5, textvariable = self.entry_text)
         self.entry.pack()
-        self.submit = tk.Button(self, text="Submit", fg="black", command = self.submitUsername)
+        self.submit = tk.Button(self, text="Submit", fg="black", command = self.submit)
         self.submit.pack(side="bottom")
         self.submit_done = False
         self.username = ""
 
     def update_text(self, text):
         self.text["text"] = text
-        self.text.pack;
+        self.text.pack()
 
     def hide_interaction(self):
         self.submit.pack_forget()
         self.entry.pack_forget()
 
     def show_interaction(self):
-        self.submit.pack
-        self.entry.pack
+        self.entry.pack()
+        self.submit.pack()
+
 
 
 
@@ -57,7 +63,9 @@ while True:
     ui.update()
     ui.update_idletasks()
     if ui.submit_done:
-        ui.setStateLoading()
+        ui.setStateLoading("Waiting for other players...")
+        ui.update()
+        ui.update_idletasks()
         break
 
 
@@ -112,13 +120,16 @@ while True:
             prompt = client_socket.recv(prompt_length).decode('utf-8')
 
             # Print message    TURN INTO GENERAL FUNCTION
-            #ui.setStatePrompt(f'{prompt}')
+            ui.setStatePrompt(f'{prompt}')
 
-            #while True:
-            #    ui.update()
-            #    ui.update_idletasks()
-            #    if ui.submit_done:
-            #        break
+            while True:
+                ui.update()
+                ui.update_idletasks()
+                if ui.submit_done:
+                    ui.setStateLoading("Waiting for other players to respond...")
+                    ui.update()
+                    ui.update_idletasks()
+                    break
 
 
                 # Wait for user to input a message
