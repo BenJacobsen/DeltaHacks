@@ -10,7 +10,7 @@ class player:
         self.responses = []
 
 class game:
-    def __init__(self, url, prompts, prompt_assign_func, round_func, end_func, max_players, max_rounds): #front_end
+    def __init__(self, url, prompts, prompt_assign_func, round_start_func, round_end_func, end_func, max_players, max_rounds): #front_end
         self.players = {}
         self.player_keys = []
         self.num_players = 0
@@ -20,7 +20,8 @@ class game:
         self.IP = url
         self.prompts = prompts
         self.prompt_assign_func = prompt_assign_func
-        self.round_func = round_func
+        self.round_start_func = round_start_func
+        self.round_end_func = round_end_func
         self.end_func = end_func
         
         self.max_players = max_players
@@ -171,19 +172,19 @@ class game:
                         self.player_keys = sockets_list
                         self.setup_after_login()
                         perform_round()
+                        self.round_start_func(self)
+
                 # Else existing socket is sending a message
                 else:
-                    #client_socket, client_address = server_socket.accept()
-                    #print(self.players[notified_socket].name)
-                    #print(len(self.players[notified_socket].responses))
-                    #print(self.round_num)
+                    #check if already answered
                     if len(self.players[notified_socket].responses) == self.round_num - 1:
                         self.num_answers += 1
                         self.players[notified_socket].responses.append(receive_response(notified_socket))
-                        #print(self.players[notified_socket].responses[0])
+                        #everyone answered
                         if self.num_answers == self.num_players and self.round_num < self.max_rounds:
-                            self.round_func(self)
+                            self.round_end_func(self)
                             perform_round()
+                            self.round_start_func(self)
                             self.num_answers = 0
 
 
