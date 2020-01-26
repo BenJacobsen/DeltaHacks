@@ -1,6 +1,3 @@
-Ideas:
-OAuth framework for ease of user
-
 Library for making jackbox-like games on web server.
 Research things needed for bare-bones implementation
 (Host connect to individual user, are sockets needed? Basic auth to identify answers by each player.
