@@ -4,7 +4,7 @@ import errno
 import sys
 import tkinter as tk
 
-class client_ui(tk.Frame):
+class client_mc(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
@@ -12,14 +12,18 @@ class client_ui(tk.Frame):
         self.create_widgets()
 
 
-    def submit(self):
+    def submit(self, btn):
         if  self.username == "":
             self.username = self.entry_text.get()
+        print("yeee")
+        self.subOption = btn
         self.submit_done = True
 
 
     def setStateLoading(self, stateText):
         self.text["text"] = stateText
+        self.submitA["text"] = "A"
+        self.entry.pack_forget()
         self.hide_interaction()
 
     def setStatePrompt(self, prompt):
@@ -30,27 +34,29 @@ class client_ui(tk.Frame):
 
 
     def create_widgets(self):
-        self.text = tk.Label(self, text = "Please input your username", width = '50')
+        self.username = ""
+        self.subOption = ""
+        self.text = tk.Label(self, text = "Please input your username")
         self.text.pack()
         self.entry_text = tk.StringVar(self)
-        self.entry = tk.Entry(self, bd = 5, textvariable = self.entry_text, width = 200)
+        self.entry = tk.Entry(self, bd = 5, textvariable = self.entry_text)
         self.entry.pack()
-        self.submit = tk.Button(self, text="Submit", fg="black", command = self.submit, width = "100")
-        self.submit.pack(side="bottom")
+        self.submitA = tk.Button(self, text="Submit", fg="black", command = lambda :self.submit("A"))
+        self.submitA.pack()
+        self.submitB = tk.Button(self, text="B", fg="black", command = lambda :self.submit("B"))
         self.submit_done = False
-        self.username = ""
 
     def update_text(self, text):
         self.text["text"] = text
         self.text.pack()
 
     def hide_interaction(self):
-        self.submit.pack_forget()
-        self.entry.pack_forget()
+        self.submitA.pack_forget()
+        self.submitB.pack_forget()
 
     def show_interaction(self):
-        self.entry.pack()
-        self.submit.pack()
+        self.submitA.pack(side = 'left')
+        self.submitB.pack(side = 'right')
 
 
 
@@ -58,7 +64,7 @@ class client_ui(tk.Frame):
 
 
 root = tk.Tk()
-ui = client_ui(master=root)
+ui = client_mc(master=root)
 while True:
     ui.update()
     ui.update_idletasks()
@@ -133,7 +139,7 @@ while True:
 
 
                 # Wait for user to input a message
-            message = ui.entry_text.get()
+            message = ui.subOption
             #message = input(f'{res_pretext} > ')
     # If message is not empty - send it
             if message:
