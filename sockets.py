@@ -7,7 +7,7 @@ IP = "127.0.0.1"
 PORT = 1234
 def prompt_assign(num_players, prompts):
     return [[prompts[0], prompts[1]] for i in range(num_players)]
-gamer = game('localhost', ['Favorite Sport?', 'Favorite Food?'], prompt_assign, 2)
+gamer = game('localhost', ['Favorite Sport?', 'Favorite Food?'], prompt_assign, 1)
 
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -29,6 +29,7 @@ server_socket.listen()
 # List of sockets for select.select()
 #sockets_list = [server_socket]
 sockets_list = []
+server_list = [server_socket]
 # List of connected clients - socket as a key, user header and name as data
 
 print(f'Listening for connections on {IP}:{PORT}...')
@@ -49,7 +50,7 @@ def receive_login(client_socket):
         message_length = int(message_header.decode('utf-8').strip())
         name = str(client_socket.recv(message_length))
         # Return an object of message header and message data
-        return player(gamer.num_players, name)
+        return player(name)
         #return {'header': message_header, 'data': client_socket.recv(message_length)}
 
     except:
@@ -60,7 +61,7 @@ def receive_login(client_socket):
         # and that's also a cause when we receive an empty message
         return False
 # Handles message receiving
-def receive_message(client_socket):
+def receive_response(client_socket):
 
     try:
 
@@ -73,10 +74,8 @@ def receive_message(client_socket):
 
         # Convert header to int value
         message_length = int(message_header.decode('utf-8').strip())
-
         # Return an object of message header and message data
-        return player()
-        return {'header': message_header, 'data': client_socket.recv(message_length)}
+        return str(client_socket.recv(message_length))
 
     except:
 
@@ -86,9 +85,17 @@ def receive_message(client_socket):
         # and that's also a cause when we receive an empty message
         return False
 
+def perform_round():
+    for player_socket in gamer.player_keys:
+        prompt = gamer.players[player_socket].prompts[gamer.round_num]
+        prompt_header = f"{len(prompt):<{HEADER_LENGTH}}".encode('utf-8')
+        player_socket.send(prompt_header + prompt.encode('utf-8'))
+        gamer.round_num += 1
+
+
+
 #Loop for accepting users
-server_list = [server_socket]
-while gamer.num_players < gamer.max_players:
+while gamer.num_players < gamer.max_players or (gamer.round_num <= gamer.max_rounds and gamer.num_answers < gamer.num_players):
 
     # Calls Unix select() system call or Windows select() WinSock call with three parameters:
     #   - rlist - sockets to be monitored for incoming data
@@ -99,14 +106,14 @@ while gamer.num_players < gamer.max_players:
     #   - writing - sockets ready for data to be send thru them
     #   - errors  - sockets with some exceptions
     # This is a blocking call, code execution will "wait" here and "get" notified in case any action should be taken
-    read_sockets, _, exception_sockets = select.select(server_list, [], server_list)
+    read_sockets, _, exception_sockets = select.select(server_list + sockets_list, [], server_list + sockets_list)
 
 
     # Iterate over notified sockets
     for notified_socket in read_sockets:
-
+        print("GET")
         # If notified socket is a server socket - new connection, accept it
-        if notified_socket == server_socket:
+        if notified_socket == server_socket and gamer.num_players < gamer.max_players:
 
             # Accept new connection
             # That gives us new socket - client socket, connected to this given client only, it's unique for that client
@@ -130,25 +137,33 @@ while gamer.num_players < gamer.max_players:
             sockets_list.append(client_socket)
             # Also save username and username header
             gamer.players[client_socket] = receive_login(client_socket)
-
+            if (gamer.num_players == gamer.max_players):
+                gamer.player_keys = sockets_list
+                gamer.setup_after_login()
+                perform_round()
             print('Accepted new connection from {}:{}, username: {}.'.format(*client_address, gamer.players[client_socket].name))
         # Else existing socket is sending a message
+        else:
+            print(gamer.round_num - 1)
+            #client_socket, client_address = server_socket.accept()
+            if len(gamer.players[notified_socket].responses) == gamer.round_num - 1:
+                print(gamer.players[notified_socket].name)
+                gamer.num_answers += 1
+                gamer.players[notified_socket].responses.append(receive_response(notified_socket))
+                print(gamer.players[notified_socket].responses[0])
+                if gamer.num_answers == gamer.num_players and gamer.round_num < gamer.max_rounds:
+                    perform_round()
+                    gamer.num_answers = 0
+
 
 
     # It's not really necessary to have this, but will handle some socket exceptions just in case
     for notified_socket in exception_sockets:
         # Remove from list for socket.socket()
         sockets_list.remove(notified_socket)
-print("Game Begin")
 #for key,value in gamer.players.items():
 #    print(key)
 #print(sockets_list[0])
-gamer.player_keys = sockets_list
-sorted_prompts = gamer.setup_after_login()
-
-for key,value in gamer.players.items():
-    print(value.id)
-    print(value.name)
-    print(value.prompts)
-
+#print(gamer.players[gamer.player_keys].responses[0])
+print("GAME OVER")
         # Remove from our list of users
