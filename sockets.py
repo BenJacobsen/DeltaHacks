@@ -9,6 +9,7 @@ def prompt_assign(num_players, prompts):
     return [[prompts[0], prompts[1]] for i in range(num_players)]
 gamer = game('localhost', ['Favorite Sport?', 'Favorite Food?'], prompt_assign, 2)
 
+
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
 # socket.SOCK_STREAM - TCP, conection-based, socket.SOCK_DGRAM - UDP, connectionless, datagrams, socket.SOCK_RAW - raw IP packets
