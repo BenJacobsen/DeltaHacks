@@ -1,12 +1,74 @@
 import socket
 import select
 import errno
+import sys
+import tkinter as tk
+
+class client_ui(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.pack()
+        self.create_widgets()
+
+    def submitUsername(self):
+        self.username = self.entry_text.get()
+        self.submit_done = True
+
+    def setStateLoading(self):
+        self.text["text"] = "Loading..."
+        self.hide_interaction()
+
+    def setStatePrompt(self, prompt):
+        self.text["text"] = prompt
+        self.show_interaction()
+
+
+    def create_widgets(self):
+        self.text = tk.Label(self, text = "Please input your username")
+        self.text.pack()
+        self.entry_text = tk.StringVar(self)
+        self.entry = tk.Entry(self, bd = 5, textvariable = self.entry_text)
+        self.entry.pack()
+        self.submit = tk.Button(self, text="Submit", fg="black", command = self.submitUsername)
+        self.submit.pack(side="bottom")
+        self.submit_done = False
+        self.username = ""
+
+    def update_text(self, text):
+        self.text["text"] = text
+        self.text.pack;
+
+    def hide_interaction(self):
+        self.submit.pack_forget()
+        self.entry.pack_forget()
+
+    def show_interaction(self):
+        self.submit.pack
+        self.entry.pack
+
+
+
+
+
+root = tk.Tk()
+ui = client_ui(master=root)
+while True:
+    ui.update()
+    ui.update_idletasks()
+    if ui.submit_done:
+        ui.setStateLoading()
+        break
+
 
 HEADER_LENGTH = 10
 
+
+
 IP = "127.0.0.1"
 PORT = 1234
-my_username = input("Username: ")
+my_username = ui.username
+print("done")
 #my_username = "ben"
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -31,6 +93,7 @@ client_socket.send(username_header + username)
     #user_message = message.encode('utf-8')
     #user_message_header = f"{len(user_message):<{HEADER_LENGTH}}".encode('utf-8')
     #client_socket.send(user_message_header + user_message)
+
 while True:
 
     try:
@@ -49,9 +112,17 @@ while True:
             prompt = client_socket.recv(prompt_length).decode('utf-8')
 
             # Print message    TURN INTO GENERAL FUNCTION
-            print(f'{prompt}')
+            #ui.setStatePrompt(f'{prompt}')
+
+            #while True:
+            #    ui.update()
+            #    ui.update_idletasks()
+            #    if ui.submit_done:
+            #        break
+
+
                 # Wait for user to input a message
-            message = input("Response: ")
+            message = ui.entry_text.get()
             #message = input(f'{res_pretext} > ')
     # If message is not empty - send it
             if message:
