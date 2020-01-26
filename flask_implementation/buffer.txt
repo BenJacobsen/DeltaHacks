@@ -15,3 +15,36 @@
         self.app.run(debug=True)
 #    def start(self):
  #       self.app.run(debug=True)
+
+
+         else:
+
+            # Receive message
+            message = receive_message(notified_socket)
+
+            # If False, client disconnected, cleanup
+            if message is False:
+                print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
+
+                # Remove from list for socket.socket()
+                sockets_list.remove(notified_socket)
+
+                # Remove from our list of users
+                del clients[notified_socket]
+
+                continue
+
+            # Get user by notified socket, so we will know who sent the message
+            user = clients[notified_socket]
+
+            print(f'Received message from {user["data"].decode("utf-8")}: {user["message"].decode("utf-8")}')
+
+            # Iterate over connected clients and broadcast message
+            for client_socket in clients:
+
+                # But don't sent it to sender
+                if client_socket != notified_socket:
+
+                    # Send user and message (both with their headers)
+                    # We are reusing here message header sent by sender, and saved username header send by user when he connected
+                    client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
